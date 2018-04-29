@@ -1,3 +1,4 @@
 rootProject.name = 'netty-projects'
 include 'common'
 include 'ch2-oio-echo-server'
+include 'ch2-nio-echo-server'
