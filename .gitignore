@@ -9,3 +9,4 @@ out/
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 
+memo.md
