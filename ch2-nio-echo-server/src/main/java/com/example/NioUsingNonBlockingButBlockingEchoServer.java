@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** いったいいつからブロッキングしていないと錯覚していた */
 public class NioUsingNonBlockingButBlockingEchoServer implements Runnable, AutoCloseable {
 
   private static final Logger logger = LoggerFactory.getLogger(NioUsingNonBlockingButBlockingEchoServer.class);
