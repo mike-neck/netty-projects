@@ -28,13 +28,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-public class NioUsingNonBlockingButBlockingEchoServer implements Runnable, AutoCloseable {
+public class NioEchoServer implements Runnable, AutoCloseable {
 
-  private static final Logger logger = LoggerFactory.getLogger(NioUsingNonBlockingButBlockingEchoServer.class);
+  private static final Logger logger = LoggerFactory.getLogger(NioEchoServer.class);
 
-  public static void main(String[] args) throws IOException {
-    new NioUsingNonBlockingButBlockingEchoServer(8000).run();
+  public static void main(String[] args) {
+    final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    try (final NioEchoServer server = new NioEchoServer(8000)) {
+      final Future<?> future = executorService.submit(server);
+      future.get();
+    } catch (Exception e) {
+      logger.info("error on executing service", e);
+    } finally {
+      executorService.shutdown();
+    }
   }
 
   private final ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -42,7 +51,7 @@ public class NioUsingNonBlockingButBlockingEchoServer implements Runnable, AutoC
   private final ServerSocketChannel serverSocketChannel;
   private final InetSocketAddress address;
 
-  private NioUsingNonBlockingButBlockingEchoServer(final int port) throws IOException {
+  private NioEchoServer(final int port) throws IOException {
     this.serverSocketChannel = ServerSocketChannel.open();
     this.address = new InetSocketAddress(port);
     initialize();
@@ -63,7 +72,7 @@ public class NioUsingNonBlockingButBlockingEchoServer implements Runnable, AutoC
       logger.info("server start on {}", address);
       handle(selector);
     } catch (IOException e) {
-        logger.warn("error on main loop", e);
+      logger.warn("error on main loop", e);
     }
   }
 
@@ -72,11 +81,12 @@ public class NioUsingNonBlockingButBlockingEchoServer implements Runnable, AutoC
       final Set<SelectionKey> keys = selector.selectedKeys();
       logger.info("key size: {}", keys.size());
       for (SelectionKey key : keys) {
-          final NioUsingNonBlockingButBlockingEchoServerHandler handler = new 
-                  NioUsingNonBlockingButBlockingEchoServerHandler(key);
-          final Optional<Exception> result = handler.call();
-          result.ifPresent(e -> logger.warn("error for key {} [{}]", key, e.getClass().getCanonicalName()));
-          keys.remove(key);  // op_accept と accept 以降のキーは別物かつ selectionKeys に残り続ける
+        final NioEchoServerHandler handler =
+            new NioEchoServerHandler(key);
+        final Optional<Exception> result = handler.call();
+        result.ifPresent(
+            e -> logger.warn("error for key {} [{}]", key, e.getClass().getCanonicalName()));
+        keys.remove(key); // op_accept と accept 以降のキーは別物かつ selectionKeys に残り続ける
       }
     }
   }

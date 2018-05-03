@@ -35,16 +35,16 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
 
-public class NioUsingNonBlockingButBlockingEchoServerHandler
+public class NioEchoServerHandler
     implements Callable<Optional<Exception>>, Supplier<Optional<Exception>> {
 
   private static final Logger logger =
-      LoggerFactory.getLogger(NioUsingNonBlockingButBlockingEchoServer.class);
+      LoggerFactory.getLogger(NioEchoServer.class);
 
   private final SelectionKey key;
   private final SelectableChannel selectableChannel;
 
-  NioUsingNonBlockingButBlockingEchoServerHandler(SelectionKey key) {
+  NioEchoServerHandler(SelectionKey key) {
     this.key = key;
     this.selectableChannel = key.channel();
   }
