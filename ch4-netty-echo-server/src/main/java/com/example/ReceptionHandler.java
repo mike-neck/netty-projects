@@ -16,73 +16,91 @@
 package com.example;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
 
 @ChannelHandler.Sharable
 public class ReceptionHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ReceptionHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(ReceptionHandler.class);
 
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        logger.info("channelRead");
-        final ByteBuf byteBuf = (ByteBuf) msg;
-        final String message = byteBuf.toString(StandardCharsets.UTF_8);
-        logger.info("message: {}", message);
-        ctx.fireChannelRead(message);
-    }
+  private static final byte[] CLOSE_SIGNAL = {
+    (byte) 0xff, (byte) 0xf4, (byte) 0xff, (byte) 0xfd, (byte) 0x06
+  };
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warn("error on handling inbound message", cause);
-        super.exceptionCaught(ctx, cause);
-    }
+  private static final ByteBuf CLOSE_MESSAGE = Unpooled.buffer();
 
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelRegistered");
-        super.channelRegistered(ctx);
-    }
+  static {
+    CLOSE_MESSAGE.writeCharSequence("Byte.", StandardCharsets.UTF_8);
+  }
 
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelUnregistered");
-        super.channelUnregistered(ctx);
+  @Override
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    logger.info("channelRead");
+    final ByteBuf byteBuf = (ByteBuf) msg;
+    final int size = byteBuf.readableBytes();
+    final byte[] bytes = new byte[size];
+    byteBuf.readBytes(bytes);
+    if (Arrays.equals(CLOSE_SIGNAL, bytes)) {
+      ctx.close();
+    } else {
+      final String message = new String(bytes, StandardCharsets.UTF_8);
+      logger.info("message: {}", message);
+      ctx.fireChannelRead(message);
     }
+  }
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelActive");
-        super.channelActive(ctx);
-    }
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    logger.warn("error on handling inbound message", cause);
+    super.exceptionCaught(ctx, cause);
+  }
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelInactive");
-        super.channelInactive(ctx);
-    }
+  @Override
+  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelRegistered");
+    super.channelRegistered(ctx);
+  }
 
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelReadComplete");
-        super.channelReadComplete(ctx);
-    }
+  @Override
+  public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelUnregistered");
+    super.channelUnregistered(ctx);
+  }
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        logger.info("handlerAdded");
-        super.handlerAdded(ctx);
-    }
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelActive");
+    super.channelActive(ctx);
+  }
 
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        logger.info("handlerRemoved");
-        super.handlerRemoved(ctx);
-    }
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelInactive");
+    super.channelInactive(ctx);
+  }
+
+  @Override
+  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelReadComplete");
+    super.channelReadComplete(ctx);
+  }
+
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    logger.info("handlerAdded");
+    super.handlerAdded(ctx);
+  }
+
+  @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    logger.info("handlerRemoved");
+    super.handlerRemoved(ctx);
+  }
 }
