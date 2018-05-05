@@ -15,8 +15,7 @@
  */
 package com.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -32,14 +31,13 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.joining;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NioEchoServerHandler
     implements Callable<Optional<Exception>>, Supplier<Optional<Exception>> {
 
-  private static final Logger logger =
-      LoggerFactory.getLogger(NioEchoServer.class);
+  private static final Logger logger = LoggerFactory.getLogger(NioEchoServer.class);
 
   private final SelectionKey key;
   private final SelectableChannel selectableChannel;
@@ -103,8 +101,8 @@ public class NioEchoServerHandler
       byteBuffer.compact();
 
       if (isCloseSignal(bytes)) {
-          channel.close();
-          return;
+        channel.close();
+        return;
       }
 
       final String message = new String(bytes, StandardCharsets.UTF_8);
@@ -139,7 +137,9 @@ public class NioEchoServerHandler
     }
   }
 
-  private static final byte[] CLOSE_SIGNAL = {(byte) 0xff, (byte) 0xf4, (byte) 0xff, (byte) 0xfd, (byte) 0x06};
+  private static final byte[] CLOSE_SIGNAL = {
+    (byte) 0xff, (byte) 0xf4, (byte) 0xff, (byte) 0xfd, (byte) 0x06
+  };
 
   private static boolean isCloseSignal(final byte[] bytes) {
     return Arrays.equals(CLOSE_SIGNAL, bytes);

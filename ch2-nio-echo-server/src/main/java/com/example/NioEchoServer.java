@@ -15,9 +15,6 @@
  */
 package com.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -29,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NioEchoServer implements Runnable, AutoCloseable {
 
@@ -81,8 +80,7 @@ public class NioEchoServer implements Runnable, AutoCloseable {
       final Set<SelectionKey> keys = selector.selectedKeys();
       logger.info("key size: {}", keys.size());
       for (SelectionKey key : keys) {
-        final NioEchoServerHandler handler =
-            new NioEchoServerHandler(key);
+        final NioEchoServerHandler handler = new NioEchoServerHandler(key);
         final Optional<Exception> result = handler.call();
         result.ifPresent(
             e -> logger.warn("error for key {} [{}]", key, e.getClass().getCanonicalName()));
