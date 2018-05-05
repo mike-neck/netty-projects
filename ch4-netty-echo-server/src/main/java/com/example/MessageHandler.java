@@ -19,77 +19,78 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ChannelHandler.Sharable
 public class MessageHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        final String message = (String) msg;
-        logger.info("MessageHandler receive message {}", message);
+  @Override
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
+    final String message = (String) msg;
+    logger.info("MessageHandler receive message {}", message);
 
-        final String returnMessage = String.format("[%s] %s", LocalDateTime.now(), message);
+    final String returnMessage = String.format("[%s] %s", LocalDateTime.now(), message);
 
-        final ByteBuf buffer = ctx.alloc().buffer();
-        buffer.writeCharSequence(returnMessage, StandardCharsets.UTF_8);
+    final ByteBuf buffer = ctx.alloc().buffer();
+    buffer.writeCharSequence(returnMessage, StandardCharsets.UTF_8);
 
-        ctx.writeAndFlush(buffer).addListener(future -> {
-            if (future.isSuccess()) {
+    ctx.writeAndFlush(buffer)
+        .addListener(
+            future -> {
+              if (future.isSuccess()) {
                 logger.info("successfully returns message: {}", returnMessage);
-            } else if (future.isCancelled()) {
+              } else if (future.isCancelled()) {
                 logger.info("returning message is cancelled");
-            } else {
+              } else {
                 logger.info("fail to return message", future.cause());
-            }
-        });
-    }
+              }
+            });
+  }
 
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelRegistered");
-        super.channelRegistered(ctx);
-    }
+  @Override
+  public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelRegistered");
+    super.channelRegistered(ctx);
+  }
 
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelUnregistered");
-        super.channelUnregistered(ctx);
-    }
+  @Override
+  public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelUnregistered");
+    super.channelUnregistered(ctx);
+  }
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelActive");
-        super.channelActive(ctx);
-    }
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelActive");
+    super.channelActive(ctx);
+  }
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelInactive");
-        super.channelInactive(ctx);
-    }
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelInactive");
+    super.channelInactive(ctx);
+  }
 
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelReadComplete");
-        super.channelReadComplete(ctx);
-    }
+  @Override
+  public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+    logger.info("channelReadComplete");
+    super.channelReadComplete(ctx);
+  }
 
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        logger.info("handlerAdded");
-        super.handlerAdded(ctx);
-    }
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    logger.info("handlerAdded");
+    super.handlerAdded(ctx);
+  }
 
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        logger.info("handlerRemoved");
-        super.handlerRemoved(ctx);
-    }
+  @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    logger.info("handlerRemoved");
+    super.handlerRemoved(ctx);
+  }
 }

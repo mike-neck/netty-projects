@@ -3,6 +3,8 @@ plugins {
   id 'com.github.sherter.google-java-format' version '0.6'
 }
 
+import com.github.sherter.googlejavaformatgradleplugin.GoogleJavaFormat
+
 repositories {
   mavenCentral()
   jcenter()
@@ -21,3 +23,6 @@ test {
   useJUnitPlatform()
 }
 
+task truelyGoogleJavaFormat(type: GoogleJavaFormat) {
+  source = sourceSets*.allJava
+}
