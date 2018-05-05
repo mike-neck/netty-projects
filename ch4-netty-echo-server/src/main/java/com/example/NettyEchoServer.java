@@ -15,13 +15,10 @@
  */
 package com.example;
 
-import com.example.common.AllAutoCloseable;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,30 +28,23 @@ public class NettyEchoServer implements Runnable {
   private static final Logger logger = LoggerFactory.getLogger(NettyEchoServer.class);
 
   private final int port;
+  private final TransportProvider transportProvider;
 
-  public NettyEchoServer(int port) {
+  NettyEchoServer(int port, TransportProvider transportProvider) {
     this.port = port;
-  }
-
-  public static void main(String[] args) {
-    new NettyEchoServer(8000).run();
+    this.transportProvider = transportProvider;
   }
 
   @Override
   public void run() {
-    final NioEventLoopGroup serverChannelLoop = new NioEventLoopGroup();
-    final NioEventLoopGroup channelHandlerLoop = new NioEventLoopGroup();
-
     final ReceptionHandler receptionHandler = new ReceptionHandler();
     final MessageHandler messageHandler = new MessageHandler();
 
-    try (final AllAutoCloseable ignored =
-        ((AllAutoCloseable) (channelHandlerLoop::shutdownGracefully))
-            .andThen(serverChannelLoop::shutdownGracefully)) {
+    try (final EventLoopGroups groups = transportProvider.eventLoopGroups()) {
       final ServerBootstrap serverBootstrap =
           new ServerBootstrap()
-              .group(serverChannelLoop, channelHandlerLoop)
-              .channel(NioServerSocketChannel.class)
+              .group(groups.serverChannelLoop(), groups.childChannelLoop())
+              .channel(transportProvider.serverSocketChannel())
               .localAddress(port)
               .childHandler(
                   new ChannelInitializer<SocketChannel>() {
