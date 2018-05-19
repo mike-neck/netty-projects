@@ -1,0 +1,29 @@
+plugins {
+    id 'java-library'
+    id 'com.github.sherter.google-java-format' version '0.6'
+}
+
+import com.github.sherter.googlejavaformatgradleplugin.GoogleJavaFormat
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation rootProject.project('common')
+    implementation group: 'io.netty', name: 'netty-codec-http', version: '4.1.24.Final'
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+    implementation group: 'io.projectreactor.ipc', name: 'reactor-netty', version: '0.7.7.RELEASE'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task truelyGoogleJavaFormat(type: GoogleJavaFormat) {
+    source = sourceSets*.allJava
+}
