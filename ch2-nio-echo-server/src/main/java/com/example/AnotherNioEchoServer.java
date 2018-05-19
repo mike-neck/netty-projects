@@ -21,9 +21,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
+import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -61,8 +64,7 @@ public class AnotherNioEchoServer implements Runnable {
   @Override
   public void run() {
     try {
-      final ServerSocket serverSocket = serverSocketChannel.socket();
-      serverSocket.setReuseAddress(true);
+      serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
       final InetSocketAddress address = new InetSocketAddress(port);
       serverSocketChannel.bind(address);
       serverSocketChannel.configureBlocking(false);
