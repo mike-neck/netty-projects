@@ -18,18 +18,29 @@ package com.example;
 import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class RunOnEventLoop {
 
   public static void main(String[] args) throws InterruptedException {
-      final CountDownLatch latch = new CountDownLatch(1);
-      final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
+    final CountDownLatch latch = new CountDownLatch(3);
+    final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
     eventLoopGroup.submit(
         () -> {
           latch.countDown();
           System.out.println("done task");
         });
-      latch.await();
-      eventLoopGroup.shutdownGracefully().addListener(f -> System.out.println("finished"));
+    eventLoopGroup.scheduleAtFixedRate(
+        () -> {
+          final long count = latch.getCount();
+          if (count == 0L) return;
+          latch.countDown();
+          System.out.println(String.format("done task on schedule: %d", 3 - count));
+        },
+        20L,
+        20L,
+        TimeUnit.MILLISECONDS);
+    latch.await();
+    eventLoopGroup.shutdownGracefully().addListener(f -> System.out.println("finished"));
   }
 }
