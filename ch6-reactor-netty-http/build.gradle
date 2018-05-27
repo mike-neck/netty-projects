@@ -15,6 +15,8 @@ dependencies {
     implementation group: 'io.netty', name: 'netty-codec-http', version: '4.1.24.Final'
     implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     implementation group: 'io.projectreactor.ipc', name: 'reactor-netty', version: '0.7.7.RELEASE'
+    implementation group: 'org.eclipse.collections', name: 'eclipse-collections', version: '9.2.0'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.9.5'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.1'
