@@ -36,7 +36,7 @@ public class NettyHttpClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyHttpClient.class);
 
-    public static void main(String[] args) throws SSLException {
+    public static void main(String[] args) throws SSLException, InterruptedException {
         final SslContext context = SslContextBuilder.forClient().startTls(false).build();
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -61,8 +61,10 @@ public class NettyHttpClient {
                     "/search/repositories?q=netty&sort=stars&order=desc&per_page=3", httpHeaders);
             channel.writeAndFlush(request).addListener(future1 -> logger.info("request sent."));
         });
-        countDownLatch.countDown();
-        logger.info("finished");
-        channelFuture.channel().closeFuture().addListener(f -> logger.info("closed"));
+        countDownLatch.await();
+        channelFuture.channel().closeFuture().addListener(f -> {
+            logger.info("closed");
+            eventLoopGroup.shutdownGracefully().addListener(gf -> logger.info("finish"));
+        });
     }
 }
