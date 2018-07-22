@@ -18,7 +18,6 @@ package com.example;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -50,24 +49,23 @@ public class NettyHttpClient {
     final String hostname = "api.github.com";
     final ChannelFuture channelFuture = bootstrap.connect(new InetSocketAddress(hostname, 443));
     channelFuture.addListener(
-        (ChannelFutureListener)
-            future -> {
-              logger.info("connected remote peer.");
-              final Channel channel = channelFuture.channel();
-              final DefaultHttpHeaders httpHeaders = new DefaultHttpHeaders();
-              httpHeaders.add("Host", hostname);
-              httpHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-              httpHeaders.add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-              httpHeaders.add("User-Agent", "Netty");
-              httpHeaders.add("Accept", "application/json");
-              final DefaultHttpRequest request =
-                  new DefaultHttpRequest(
-                      HttpVersion.HTTP_1_1,
-                      HttpMethod.GET,
-                      "/search/repositories?q=netty&sort=stars&order=desc&per_page=3",
-                      httpHeaders);
-              channel.writeAndFlush(request).addListener(future1 -> logger.info("request sent."));
-            });
+        future -> {
+          logger.info("connected remote peer.");
+          final Channel channel = channelFuture.channel();
+          final DefaultHttpHeaders httpHeaders = new DefaultHttpHeaders();
+          httpHeaders.add("Host", hostname);
+          httpHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+          httpHeaders.add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
+          httpHeaders.add("User-Agent", "Netty");
+          httpHeaders.add("Accept", "application/json");
+          final DefaultHttpRequest request =
+              new DefaultHttpRequest(
+                  HttpVersion.HTTP_1_1,
+                  HttpMethod.GET,
+                  "/search/repositories?q=netty&sort=stars&order=desc&per_page=3",
+                  httpHeaders);
+          channel.writeAndFlush(request).addListener(future1 -> logger.info("request sent."));
+        });
     countDownLatch.await();
     channelFuture
         .channel()
@@ -76,6 +74,7 @@ public class NettyHttpClient {
             f -> {
               logger.info("closed");
               eventLoopGroup.shutdownGracefully().addListener(gf -> logger.info("finish"));
-            });
+            })
+        .sync();
   }
 }

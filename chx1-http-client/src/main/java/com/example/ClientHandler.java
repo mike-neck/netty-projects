@@ -70,5 +70,5 @@ class ClientHandler {
     }
   }
 
-   static class ForRequest extends ChannelOutboundHandlerAdapter {}
+  static class ForRequest extends ChannelOutboundHandlerAdapter {}
 }
