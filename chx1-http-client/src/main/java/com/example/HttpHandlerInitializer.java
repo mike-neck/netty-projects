@@ -28,35 +28,35 @@ import java.util.concurrent.CountDownLatch;
 
 public class HttpHandlerInitializer extends ChannelInitializer<Channel> {
 
-    private final SslContext context;
-    private final boolean startTls;
-    private final CountDownLatch countDownLatch;
+  private final SslContext context;
+  private final boolean startTls;
+  private final CountDownLatch countDownLatch;
 
-    HttpHandlerInitializer(SslContext context, boolean startTls, CountDownLatch countDownLatch) {
-        this.context = context;
-        this.startTls = startTls;
-        this.countDownLatch = countDownLatch;
-    }
+  HttpHandlerInitializer(SslContext context, boolean startTls, CountDownLatch countDownLatch) {
+    this.context = context;
+    this.startTls = startTls;
+    this.countDownLatch = countDownLatch;
+  }
 
-    private SslHandler sslEngine(final Channel channel) {
-        final SSLEngine sslEngine = context.newEngine(channel.alloc());
-        return new SslHandler(sslEngine, startTls);
-    }
+  private SslHandler sslEngine(final Channel channel) {
+    final SSLEngine sslEngine = context.newEngine(channel.alloc());
+    return new SslHandler(sslEngine, startTls);
+  }
 
-    @Override
-    protected void initChannel(Channel ch) {
-        final SslHandler sslHandler = sslEngine(ch);
-        ch.pipeline()
-                .addFirst("ssl", sslHandler)
-                .addLast("ssl to http-codec", new LogHandler("ssl", "http-codec"))
-                .addLast("http-codec", new HttpClientCodec())
-                .addLast("http-codec to decompress", new LogHandler("http-codec", "decompress"))
-                .addLast("decompress", new HttpContentDecompressor())
-                .addLast("decompress to aggregate", new LogHandler("decompress", "aggregate"))
-                .addLast("aggregate", new HttpObjectAggregator(1048576))
-                .addLast("aggregate to client", new LogHandler("aggregate", "client"))
-                .addLast("client", new ClientHandler.ForResponse(countDownLatch))
-                .addLast("client to req", new LogHandler("client", "req"))
-                .addLast("req", new ClientHandler.ForRequest());
-    }
+  @Override
+  protected void initChannel(Channel ch) {
+    final SslHandler sslHandler = sslEngine(ch);
+    ch.pipeline()
+        .addFirst("ssl", sslHandler)
+        .addLast("ssl to http-codec", new LogHandler("ssl", "http-codec"))
+        .addLast("http-codec", new HttpClientCodec())
+        .addLast("http-codec to decompress", new LogHandler("http-codec", "decompress"))
+        .addLast("decompress", new HttpContentDecompressor())
+        .addLast("decompress to aggregate", new LogHandler("decompress", "aggregate"))
+        .addLast("aggregate", new HttpObjectAggregator(1048576))
+        .addLast("aggregate to client", new LogHandler("aggregate", "client"))
+        .addLast("client", new ClientHandler.ForResponse(countDownLatch))
+        .addLast("client to req", new LogHandler("client", "req"))
+        .addLast("req", new ClientHandler.ForRequest());
+  }
 }

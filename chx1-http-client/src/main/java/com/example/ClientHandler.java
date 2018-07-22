@@ -18,7 +18,6 @@ package com.example;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,44 +27,45 @@ import java.util.concurrent.CountDownLatch;
 
 class ClientHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
-    static class ForResponse extends ChannelInboundHandlerAdapter {
+  static class ForResponse extends ChannelInboundHandlerAdapter {
 
-        private final CountDownLatch countDownLatch;
+    private final CountDownLatch countDownLatch;
 
-        ForResponse(CountDownLatch countDownLatch) {
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) {
-            logger.info("response returned.");
-            if (msg instanceof FullHttpResponse) {
-                final FullHttpResponse httpResponse = (FullHttpResponse) msg;
-                logger.info("response type: {}", httpResponse.getClass().getCanonicalName());
-                logger.info("http object: {}", httpResponse);
-                final String response = httpResponse.content().toString(StandardCharsets.UTF_8);
-                logger.info("response body: {}", response);
-                countDownLatch.countDown();
-            }
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            logger.warn("exception caught", cause);
-            final Channel channel = ctx.channel();
-            if (channel.isOpen()) {
-                channel.closeFuture().addListener(f -> {
-                    logger.info("closed");
-                    countDownLatch.countDown();
-                });
-            } else {
-                logger.info("already closed");
-                countDownLatch.countDown();
-            }
-        }
+    ForResponse(CountDownLatch countDownLatch) {
+      this.countDownLatch = countDownLatch;
     }
 
-    static class ForRequest extends ChannelOutboundHandlerAdapter {}
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+      logger.info("response returned.");
+      if (msg instanceof FullHttpResponse) {
+        final FullHttpResponse httpResponse = (FullHttpResponse) msg;
+        logger.info("response type: {}", httpResponse.getClass().getCanonicalName());
+        logger.info("http object: {}", httpResponse);
+        final String response = httpResponse.content().toString(StandardCharsets.UTF_8);
+        logger.info("response body: {}", response);
+        countDownLatch.countDown();
+      }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+      logger.warn("exception caught", cause);
+      final Channel channel = ctx.channel();
+      if (channel.isOpen()) {
+        channel
+            .closeFuture()
+            .addListener(
+                f -> {
+                  logger.info("closed");
+                  countDownLatch.countDown();
+                });
+      } else {
+        logger.info("already closed");
+        countDownLatch.countDown();
+      }
+    }
+  }
 }

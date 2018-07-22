@@ -34,37 +34,48 @@ import java.util.concurrent.CountDownLatch;
 
 public class NettyHttpClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyHttpClient.class);
+  private static final Logger logger = LoggerFactory.getLogger(NettyHttpClient.class);
 
-    public static void main(String[] args) throws SSLException, InterruptedException {
-        final SslContext context = SslContextBuilder.forClient().startTls(false).build();
+  public static void main(String[] args) throws SSLException, InterruptedException {
+    final SslContext context = SslContextBuilder.forClient().startTls(false).build();
 
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
+    final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
-        final Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(eventLoopGroup)
-                .channel(NioSocketChannel.class)
-                .handler(new HttpHandlerInitializer(context, false, countDownLatch));
-        final String hostname = "api.github.com";
-        final ChannelFuture channelFuture = bootstrap.connect(new InetSocketAddress(hostname, 443));
-        channelFuture.addListener((ChannelFutureListener) future -> {
-            logger.info("connected remote peer.");
-            final Channel channel = channelFuture.channel();
-            final DefaultHttpHeaders httpHeaders = new DefaultHttpHeaders();
-            httpHeaders.add("Host", hostname);
-            httpHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-            httpHeaders.add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-            httpHeaders.add("User-Agent", "Netty");
-            httpHeaders.add("Accept", "application/json");
-            final DefaultHttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET,
-                    "/search/repositories?q=netty&sort=stars&order=desc&per_page=3", httpHeaders);
-            channel.writeAndFlush(request).addListener(future1 -> logger.info("request sent."));
-        });
-        countDownLatch.await();
-        channelFuture.channel().closeFuture().addListener(f -> {
-            logger.info("closed");
-            eventLoopGroup.shutdownGracefully().addListener(gf -> logger.info("finish"));
-        });
-    }
+    final EventLoopGroup eventLoopGroup = new NioEventLoopGroup(1);
+    final Bootstrap bootstrap = new Bootstrap();
+    bootstrap
+        .group(eventLoopGroup)
+        .channel(NioSocketChannel.class)
+        .handler(new HttpHandlerInitializer(context, false, countDownLatch));
+    final String hostname = "api.github.com";
+    final ChannelFuture channelFuture = bootstrap.connect(new InetSocketAddress(hostname, 443));
+    channelFuture.addListener(
+        (ChannelFutureListener)
+            future -> {
+              logger.info("connected remote peer.");
+              final Channel channel = channelFuture.channel();
+              final DefaultHttpHeaders httpHeaders = new DefaultHttpHeaders();
+              httpHeaders.add("Host", hostname);
+              httpHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
+              httpHeaders.add(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
+              httpHeaders.add("User-Agent", "Netty");
+              httpHeaders.add("Accept", "application/json");
+              final DefaultHttpRequest request =
+                  new DefaultHttpRequest(
+                      HttpVersion.HTTP_1_1,
+                      HttpMethod.GET,
+                      "/search/repositories?q=netty&sort=stars&order=desc&per_page=3",
+                      httpHeaders);
+              channel.writeAndFlush(request).addListener(future1 -> logger.info("request sent."));
+            });
+    countDownLatch.await();
+    channelFuture
+        .channel()
+        .closeFuture()
+        .addListener(
+            f -> {
+              logger.info("closed");
+              eventLoopGroup.shutdownGracefully().addListener(gf -> logger.info("finish"));
+            });
+  }
 }
