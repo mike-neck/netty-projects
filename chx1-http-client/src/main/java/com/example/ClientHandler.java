@@ -18,6 +18,7 @@ package com.example;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.handler.codec.http.FullHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,4 +69,6 @@ class ClientHandler {
       }
     }
   }
+
+   static class ForRequest extends ChannelOutboundHandlerAdapter {}
 }
